@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
-const app = express();
 const cookieParser = require("cookie-parser");
+const { app, server } = require("./lid/socket.js");
 
 // Cors
 const cors = require("cors");
@@ -11,18 +11,20 @@ const corsOption = {
 };
 
 // Middlewares
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 app.use(cors(corsOption));
 app.use(cookieParser());
 
 // Routers
 const AuthRouter = require("./routers/auth.router.js");
 app.use("/api/v1/auth", AuthRouter);
+const ChatRouter = require("./routers/message.router.js");
+app.use("/api/v1/chat", ChatRouter);
 
 const PORT = process.env.PORT || 3000;
 const { connectDB } = require("./lid/db.js");
 connectDB();
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 app.get("/", (req, res) => {
   res.send(`

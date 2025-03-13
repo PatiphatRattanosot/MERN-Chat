@@ -6,7 +6,6 @@ const cloudinary = require("../lid/cloudinary");
 
 exports.signup = async (req, res) => {
   const { fullName, email, password } = req.body;
-  console.log(req.body);
 
   if (!fullName || !email || !password) {
     return res.status(400).json({ message: "All fields are required" });
@@ -26,12 +25,12 @@ exports.signup = async (req, res) => {
     if (newUser) {
       generateToken(newUser._id, res);
       await newUser.save();
-      res.status(201).json({ message: "User registered successfully" });
+      return res.status(201).json({ message: "User registered successfully" });
     } else {
-      res.status(400).json({ message: "Invalid user data" });
+      return res.status(400).json({ message: "Invalid user data" });
     }
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: "Internal server error while registering" });
   }
@@ -40,7 +39,7 @@ exports.signup = async (req, res) => {
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    res.status(400).json({ message: "All fields are required" });
+    return res.status(400).json({ message: "All fields are required" });
   }
 
   try {
@@ -55,33 +54,36 @@ exports.login = async (req, res) => {
     generateToken(user._id, res);
     res.status(200).json({ message: "Login successful" });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error while login" });
+    return res
+      .status(500)
+      .json({ message: "Internal server error while login" });
   }
 };
 
 exports.logout = async (req, res) => {
   try {
-    res.cookie("token", "", {
+    return res.cookie("token", "", {
       maxAge: 0,
     });
-    res.status(200).json({ message: "Logout successful" });
+    return res.status(200).json({ message: "Logout successful" });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error while logout" });
+    return res
+      .status(500)
+      .json({ message: "Internal server error while logout" });
   }
 };
 
 exports.updateProfile = async (req, res) => {
   const { profilePic } = req.body;
-  //   const userId = req.user._id;
-  const userId = req.params.id;
+  const userId = req.user._id;
 
   try {
     if (!profilePic) {
-      res.status(400).json({ message: "Profile picture is required" });
+      return res.status(400).json({ message: "Profile picture is required" });
     }
     const uploadResponse = await cloudinary.uploader.upload(profilePic);
     if (!uploadResponse) {
-      res
+      return res
         .status(500)
         .json({ message: "Error while uploading profile picture" });
     }
@@ -91,14 +93,28 @@ exports.updateProfile = async (req, res) => {
       { new: true }
     );
     if (!updateUser) {
-      res.status(500).json({ message: "Error updating profile picture" });
+      return res
+        .status(500)
+        .json({ message: "Error updating profile picture" });
     }
-    res
+    return res
       .status(200)
-      .json({ message: "Profile updated successfully" }, updateUser);
+      .json({ message: "Profile updated successfully", updateUser });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: "Internal server error while updating profile" });
+  }
+};
+
+exports.checkAuth = async (req, res) => {
+  try {
+    return res
+      .status(200)
+      .json({ message: "Authentication successful", user: req.user });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Internal server error while checking auth" });
   }
 };
