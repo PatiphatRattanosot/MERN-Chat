@@ -2,6 +2,7 @@ import { create } from "zustand";
 import api from "../services/api";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
+import { useChatStore } from "./useChatStore";
 export const useAuthStore = create((set, get) => ({
   authUser: null,
   socket: null,
@@ -51,9 +52,12 @@ export const useAuthStore = create((set, get) => ({
   logout: async () => {
     try {
       await api.post("/auth/logout");
+      get().disconnectSocket();
       set({ authUser: null });
       toast.success("Logged out successfully");
     } catch (error) {
+      console.log(error);
+
       toast.error(error?.response?.data?.message || "Logout failed");
     }
   },
@@ -71,26 +75,50 @@ export const useAuthStore = create((set, get) => ({
   },
   connectSocket: () => {
     const { authUser, socket } = get();
-    if (!authUser || !socket?.connected) return;
+    if (!authUser || socket?.connected) return;
     const socketURL = import.meta.env.VITE_SOCKET_URL;
+
     const newSocket = io(socketURL, {
       query: {
         userId: authUser._id,
       },
     });
+
     newSocket.connect();
     set({ socket: newSocket });
     // Listen for online users
     newSocket.on("getOnlineUsers", (userIds) => {
       set({ onlineUsers: userIds });
     });
+
+    newSocket.on("friendRequestReceived", (friendId) => {
+      const selectedUser = useChatStore.getState().selectedUser;
+      if (friendId === selectedUser?._id) {
+        useChatStore.getState().setFriendRequestReceived(true);
+      }
+    });
+    newSocket.on("friendRequestSent", (friendId) => {
+      const selectedUser = useChatStore.getState().selectedUser;
+      if (friendId === selectedUser?._id) {
+        useChatStore.getState().setFriendRequestReceived(false);
+      }
+    });
+    newSocket.on("friendRequestAccepted", (friendId) => {
+      const selectedUser = useChatStore.getState().selectedUser;
+      if (friendId === selectedUser?._id) {
+        useChatStore.getState().setFriendRequestReceived(false);
+        useChatStore.getState().setFriendRequestSent(false);
+        useChatStore.getState().setIsFriend(true);
+      }
+    });
   },
   disconnectSocket: () => {
     const { socket } = get();
+    console.log(socket);
+
     if (socket?.connected) {
       socket.disconnect();
       set({ socket: null });
     }
   },
-  OnlineUsers: () => {},
 }));

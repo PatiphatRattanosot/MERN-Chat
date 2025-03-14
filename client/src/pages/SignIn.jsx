@@ -10,16 +10,12 @@ const SignIn = () => {
     email: "",
     password: "",
   });
-  const { authUser, login, isSigningIn } = useAuthStore();
+  const { login, isSigningIn } = useAuthStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     login(formData);
   };
-
-  if (authUser) {
-    return <Navigate to="/" />;
-  }
 
   return (
     <div className="h-screen grid lg:grid-cols-2">

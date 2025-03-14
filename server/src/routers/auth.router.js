@@ -6,7 +6,7 @@ const {
   logout,
   updateProfile,
   checkAuth,
-} = require("../controlles/auth.controller");
+} = require("../controllers/auth.controller");
 const { protectedRoute } = require("../middlewares/auth.middleware");
 
 router.post("/sign-up", signup);

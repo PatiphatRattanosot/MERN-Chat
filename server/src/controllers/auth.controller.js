@@ -38,6 +38,7 @@ exports.signup = async (req, res) => {
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
+
   if (!email || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
@@ -62,10 +63,10 @@ exports.login = async (req, res) => {
 
 exports.logout = async (req, res) => {
   try {
-    return res.cookie("token", "", {
+    res.cookie("token", "", {
       maxAge: 0,
     });
-    return res.status(200).json({ message: "Logout successful" });
+    res.status(200).json({ message: "Logout successful" });
   } catch (error) {
     return res
       .status(500)

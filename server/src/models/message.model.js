@@ -1,19 +1,21 @@
 const mongoose = require("mongoose");
+const { type } = require("os");
 const { Schema, model } = mongoose;
 
 const MessageSchema = new Schema(
   {
     sendId: {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     receiveId: {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     message: {
       type: String,
-      required: true,
     },
     image: {
       type: String,

@@ -20,6 +20,8 @@ const AuthRouter = require("./routers/auth.router.js");
 app.use("/api/v1/auth", AuthRouter);
 const ChatRouter = require("./routers/message.router.js");
 app.use("/api/v1/chat", ChatRouter);
+const FriendRouter = require("./routers/friend.router.js");
+app.use("/api/v1/friend", FriendRouter);
 
 const PORT = process.env.PORT || 3000;
 const { connectDB } = require("./lid/db.js");
